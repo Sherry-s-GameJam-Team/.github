@@ -1,0 +1,40 @@
+name: Update development countdown
+
+on:
+  schedule:
+    - cron: "5 0 * * *"
+      timezone: "Asia/Shanghai"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update-countdown:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+
+      - name: Update README countdown
+        run: python scripts/update_countdown.py
+
+      - name: Commit changed README
+        shell: bash
+        run: |
+          if git diff --quiet -- README.md; then
+            echo "Countdown is already current."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add README.md
+          git commit -m "docs: update development countdown"
+          git push
